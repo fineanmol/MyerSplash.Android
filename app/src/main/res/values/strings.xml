@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">MyerSplash</string>
+    <string name="app_name">Wallpaper</string>
     <string name="settings_title">SETTINGS</string>
 
     <string name="appbar_scrolling_view_behavior" translatable="false">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
@@ -93,7 +93,7 @@
     <string name="alipay_url_code" translatable="false">aex09127b4dbo4o7fbvcyb0</string>
     <string name="official_web_url" translatable="false">http://juniperphoton.net/myersplash</string>
     <string name="email_url" translatable="false">dengweichao@hotmail.com</string>
-    <string name="github_url" translatable="false">https://github.com/JuniperPhoton/MyerSplashAndroid</string>
+    <string name="github_url" translatable="false">https://github.com/fineanmol/MyerSplashAndroid</string>
     <string name="twitter_url" translatable="false">https://twitter.com/juniperphoton</string>
     <string name="weibo_url" translatable="false">
         https://weibo.com/photon
@@ -123,7 +123,7 @@
     <string name="share_title">Sharing</string>
     <string name="email_title">Emailing</string>
 
-    <string name="share_text">Share %s\'s amazing photo from MyerSplash app. Download this photo: %s</string>
+    <string name="share_text">Share %s\'s amazing photo from Wallpaper app. Download this photo: %s</string>
     <string name="search_empty_hint">Input the keyword to search.</string>
     <string name="all_clear">Cleaned up.</string>
 </resources>
