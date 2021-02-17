@@ -21,6 +21,7 @@ import com.juniperphoton.myersplash.utils.Params
 import com.juniperphoton.myersplash.utils.Pasteur
 import com.juniperphoton.myersplash.viewmodel.AppViewModelProviders
 import com.juniperphoton.myersplash.viewmodel.DownloadListViewModel
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_manage_download.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -164,7 +165,7 @@ class DownloadsListActivity : BaseActivity(), DownloadsListAdapter.Callback, Cor
 
     override fun onApplySystemInsets(top: Int, bottom: Int) {
         val params = moreFab.layoutParams as ViewGroup.MarginLayoutParams
-        params.bottomMargin += bottom
+        params.bottomMargin = bottom + resources.getDimensionPixelSize(R.dimen.fab_margin)
         moreFab.layoutParams = params
     }
 }
