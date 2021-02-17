@@ -31,7 +31,6 @@ class DownloadsListActivity : BaseActivity(), DownloadsListAdapter.Callback, Cor
         private const val TAG = "DownloadsListActivity"
         private const val DEFAULT_SPAN = 2
         private const val SCREEN_WIDTH_WITH_DEFAULT_SPAN = 1200
-        const val ACTION = "action.downloads"
     }
 
     private lateinit var adapter: DownloadsListAdapter

@@ -2,11 +2,8 @@ package com.juniperphoton.myersplash
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.annotation.TargetApi
+import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.pm.ShortcutInfo
-import android.content.pm.ShortcutManager
-import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -28,6 +25,8 @@ import com.juniperphoton.myersplash.service.DownloadService
 import com.juniperphoton.myersplash.utils.Params
 import com.juniperphoton.myersplash.utils.Pasteur
 import com.juniperphoton.myersplash.utils.PermissionUtils
+import com.juniperphoton.myersplash.utils.ShortcutsManager
+import com.juniperphoton.myersplash.utils.ShortcutsManager.initShortcuts
 import com.juniperphoton.myersplash.viewmodel.AppViewModelProviders
 import com.juniperphoton.myersplash.viewmodel.ImageSharedViewModel
 import kotlinx.android.synthetic.main.activity_main.*
@@ -39,21 +38,17 @@ class MainActivity : BaseActivity() {
         private const val TAG = "MainActivity"
 
         private const val SAVED_NAVIGATION_INDEX = "navigation_index"
-        private const val DOWNLOADS_SHORTCUT_ID = "downloads_shortcut"
-
-        private const val ACTION_SEARCH = "action.search"
-        private const val ACTION_DOWNLOADS = "action.download"
 
         private val menuMap: Map<Int, Class<out Any>> = mapOf(
-                R.id.menu_settings to SettingsActivity::class.java,
-                R.id.menu_downloads to DownloadsListActivity::class.java,
-                R.id.menu_about to AboutActivity::class.java
+            R.id.menu_settings to SettingsActivity::class.java,
+            R.id.menu_downloads to DownloadsListActivity::class.java,
+            R.id.menu_about to AboutActivity::class.java
         )
     }
 
     private var mainAdapter: MainAdapter? = null
 
-    private var handleShortcut: Boolean = false
+    private var handleShortcutOnCreate: Boolean = false
     private var initNavigationIndex = 0
     private var fabPositionX: Int = 0
     private var fabPositionY: Int = 0
@@ -64,25 +59,26 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        sharedViewModel = AppViewModelProviders.of(this).get(ImageSharedViewModel::class.java).apply {
-            onClickedImage.observe(this@MainActivity, Observer { data ->
-                data?.consume {
-                    Pasteur.info(TAG) {
-                        "onClickedImage $data"
+        sharedViewModel =
+            AppViewModelProviders.of(this).get(ImageSharedViewModel::class.java).apply {
+                onClickedImage.observe(this@MainActivity, Observer { data ->
+                    data?.consume {
+                        Pasteur.info(TAG) {
+                            "onClickedImage $data"
+                        }
+
+                        val rectF = it.rectF
+
+                        val location = IntArray(2)
+                        tagView.getLocationOnScreen(location)
+                        if (rectF.top <= location[1] + tagView.height) {
+                            tagView.animate().alpha(0f).setDuration(100).start()
+                        }
+
+                        imageDetailView.show(it)
                     }
-
-                    val rectF = it.rectF
-
-                    val location = IntArray(2)
-                    tagView.getLocationOnScreen(location)
-                    if (rectF.top <= location[1] + tagView.height) {
-                        tagView.animate().alpha(0f).setDuration(100).start()
-                    }
-
-                    imageDetailView.show(it)
-                }
-            })
-        }
+                })
+            }
 
         handleShortcutsAction()
 
@@ -105,24 +101,6 @@ class MainActivity : BaseActivity() {
         startServiceSafely(intent)
     }
 
-    private fun initShortcuts() {
-        @TargetApi(android.os.Build.VERSION_CODES.N_MR1)
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
-            val shortcutManager = getSystemService(ShortcutManager::class.java) ?: return
-            if (shortcutManager.dynamicShortcuts.size > 0) {
-                shortcutManager.removeAllDynamicShortcuts()
-            }
-            val intent = Intent(this, DownloadsListActivity::class.java)
-            intent.action = DownloadsListActivity.ACTION
-            val shortcut = ShortcutInfo.Builder(this, DOWNLOADS_SHORTCUT_ID)
-                    .setShortLabel(getString(R.string.downloadLowercase))
-                    .setLongLabel(getString(R.string.downloadLowercase))
-                    .setIcon(Icon.createWithResource(this, R.drawable.ic_download_shortcut))
-                    .setIntent(intent)
-                    .build()
-            shortcutManager.dynamicShortcuts = listOf(shortcut)
-        }
-    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         val index = viewPager.currentItem
@@ -157,9 +135,11 @@ class MainActivity : BaseActivity() {
         val height = window.decorView.height
 
         val radius = sqrt(width.pow() + height.pow()).toInt()
-        val animator = ViewAnimationUtils.createCircularReveal(searchView,
-                fabPositionX, fabPositionY,
-                (if (show) 0 else radius).toFloat(), (if (show) radius else 0).toFloat())
+        val animator = ViewAnimationUtils.createCircularReveal(
+            searchView,
+            fabPositionX, fabPositionY,
+            (if (show) 0 else radius).toFloat(), (if (show) radius else 0).toFloat()
+        )
         animator.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(a: Animator) {
                 if (!show) {
@@ -184,6 +164,7 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun initMainViews() {
         imageDetailView.apply {
             onShowing = {
@@ -208,9 +189,11 @@ class MainActivity : BaseActivity() {
             currentItem = initNavigationIndex
             offscreenPageLimit = 3
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-                override fun onPageScrolled(position: Int,
-                                            positionOffset: Float,
-                                            positionOffsetPixels: Int) = Unit
+                override fun onPageScrolled(
+                    position: Int,
+                    positionOffset: Float,
+                    positionOffsetPixels: Int
+                ) = Unit
 
                 override fun onPageSelected(position: Int) {
                     val text = tabLayout.getTabAt(position)?.text
@@ -229,23 +212,25 @@ class MainActivity : BaseActivity() {
         tagView.text = "# ${getString(R.string.pivot_new)}"
 
         toolbarLayout.addOnOffsetChangedListener(
-                AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
-                    if (searchView.visibility == View.VISIBLE) {
-                        return@OnOffsetChangedListener
-                    }
-                    if (abs(verticalOffset) - appBarLayout.height == 0) {
-                        //todo extract duration
-                        tagView.animate().alpha(1f).setDuration(300).start()
-                        val currentFlag = window.decorView.systemUiVisibility
-                        window.decorView.systemUiVisibility = currentFlag or View.SYSTEM_UI_FLAG_LOW_PROFILE
-                        searchFab.hide()
-                    } else {
-                        tagView.animate().alpha(0f).setDuration(100).start()
-                        val currentFlag = window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LOW_PROFILE.inv()
-                        window.decorView.systemUiVisibility = currentFlag
-                        searchFab.show()
-                    }
-                })
+            AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+                if (searchView.visibility == View.VISIBLE) {
+                    return@OnOffsetChangedListener
+                }
+                if (abs(verticalOffset) - appBarLayout.height == 0) {
+                    //todo extract duration
+                    tagView.animate().alpha(1f).setDuration(300).start()
+                    val currentFlag = window.decorView.systemUiVisibility
+                    window.decorView.systemUiVisibility =
+                        currentFlag or View.SYSTEM_UI_FLAG_LOW_PROFILE
+                    searchFab.hide()
+                } else {
+                    tagView.animate().alpha(0f).setDuration(100).start()
+                    val currentFlag =
+                        window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LOW_PROFILE.inv()
+                    window.decorView.systemUiVisibility = currentFlag
+                    searchFab.show()
+                }
+            })
 
         tagView.setOnClickListener {
             sharedViewModel.onRequestScrollToTop.value = tabLayout.selectedTabPosition.liveDataEvent
@@ -272,19 +257,32 @@ class MainActivity : BaseActivity() {
     }
 
     private fun handleShortcutsAction() {
-        if (handleShortcut) {
+        if (handleShortcutOnCreate) {
             return
         }
+
+        handleShortcutsByIntent(intent)
+
+        if (intent.action == ShortcutsManager.ACTION_SEARCH) {
+            handleShortcutOnCreate = true
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent ?: return
+        handleShortcutsByIntent(intent)
+    }
+
+    private fun handleShortcutsByIntent(intent: Intent) {
         val action = intent.action
         if (action != null) {
             when (action) {
-                ACTION_SEARCH -> {
-                    handleShortcut = true
+                ShortcutsManager.ACTION_SEARCH -> {
                     toolbarLayout.post { toggleSearchView(show = true, useAnimation = false) }
                 }
-                ACTION_DOWNLOADS -> {
-                    val intent = Intent(this, DownloadsListActivity::class.java)
-                    startActivity(intent)
+                else -> {
+                    // ignored
                 }
             }
         }
