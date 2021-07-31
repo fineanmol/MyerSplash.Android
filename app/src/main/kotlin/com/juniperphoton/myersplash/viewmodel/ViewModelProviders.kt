@@ -17,7 +17,8 @@ object AppViewModelProviders {
     }
 }
 
-private class VMFactory(application: Application
+private class VMFactory(
+    application: Application
 ) : ViewModelProvider.AndroidViewModelFactory(application) {
     companion object {
         val instance: VMFactory by lazy {
