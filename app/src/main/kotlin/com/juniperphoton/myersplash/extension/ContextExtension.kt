@@ -1,9 +1,11 @@
 package com.juniperphoton.myersplash.extension
 
 import android.annotation.TargetApi
+import android.app.Application
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.graphics.Point
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -69,6 +71,9 @@ fun Context.getVersionName(): String? {
 
 fun Context.startActivitySafely(intent: Intent) {
     try {
+        if (this is Application) {
+            intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+        }
         startActivity(intent)
     } catch (e: ActivityNotFoundException) {
         e.printStackTrace()

@@ -10,14 +10,13 @@ import android.view.View
 import android.view.ViewAnimationUtils
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
-import androidx.lifecycle.Observer
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.appbar.AppBarLayout
-import com.juniperphoton.myersplash.activity.AboutActivity
 import com.juniperphoton.myersplash.activity.BaseActivity
 import com.juniperphoton.myersplash.activity.DownloadsListActivity
 import com.juniperphoton.myersplash.adapter.MainAdapter
-import com.juniperphoton.myersplash.compose.SettingsComposeActivity
+import com.juniperphoton.myersplash.compose.about.AboutComposeActivity
+import com.juniperphoton.myersplash.compose.settings.SettingsComposeActivity
 import com.juniperphoton.myersplash.di.AppComponent
 import com.juniperphoton.myersplash.extension.pow
 import com.juniperphoton.myersplash.extension.startServiceSafely
@@ -42,7 +41,7 @@ class MainActivity : BaseActivity() {
         private val menuMap: Map<Int, Class<out Any>> = mapOf(
             R.id.menu_settings to SettingsComposeActivity::class.java,
             R.id.menu_downloads to DownloadsListActivity::class.java,
-            R.id.menu_about to AboutActivity::class.java
+            R.id.menu_about to AboutComposeActivity::class.java
         )
     }
 

@@ -12,14 +12,14 @@ import kotlinx.coroutines.cancel
 @Suppress("LeakingThis")
 abstract class BaseViewModel(application: Application
 ) : AndroidViewModel(application), CoroutineScope by MainScope() {
-    protected val app = getApplication<App>()
+    protected val app = getApplication<Application>()
 
     fun getString(@StringRes stringRes: Int): String {
-        return getApplication<Application>().getString(stringRes)
+        return app.getString(stringRes)
     }
 
     fun getString(@StringRes stringRes: Int, vararg params: Any): String {
-        return getApplication<Application>().getString(stringRes, *params)
+        return app.getString(stringRes, *params)
     }
 
     override fun onCleared() {

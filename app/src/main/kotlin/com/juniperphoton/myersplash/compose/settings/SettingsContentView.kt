@@ -1,5 +1,6 @@
-package com.juniperphoton.myersplash.compose
+package com.juniperphoton.myersplash.compose.settings
 
+import android.app.Application
 import android.content.Context
 import android.util.AttributeSet
 import androidx.annotation.StringRes
@@ -17,14 +18,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.AbstractComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.PreviewActivity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
+import com.juniperphoton.myersplash.App
 import com.juniperphoton.myersplash.R
 import com.juniperphoton.myersplash.compose.theme.AppTheme
 import com.juniperphoton.myersplash.utils.ThemeHelper
@@ -338,10 +343,10 @@ fun SwitchItem(
                 .weight(2f, fill = true)
                 .padding(vertical = dimensionResource(id = R.dimen.settings_margin_up_and_down))
         ) {
-            Text(text = title, color = MaterialTheme.colors.onPrimary, fontSize = 15.sp)
+            Text(text = title, color = MaterialTheme.colors.onSurface, fontSize = 15.sp)
             Text(
                 text = subTitle,
-                color = MaterialTheme.colors.onPrimary.copy(alpha = 0.5f),
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
                 fontSize = 13.sp
             )
         }
@@ -366,5 +371,6 @@ fun SwitchItem(
 @Preview(widthDp = 300, heightDp = 400)
 @Composable
 fun Preview() {
-    SettingsContent(onSetTheme = {}, onSetBrowsingQuality = {}, onSetDownloadQuality = {})
+    val viewModel = SettingsViewModel(LocalContext.current.applicationContext as Application)
+    SettingsContent(viewModel, onSetTheme = {}, onSetBrowsingQuality = {}, onSetDownloadQuality = {})
 }

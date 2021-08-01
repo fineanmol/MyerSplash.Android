@@ -1,4 +1,4 @@
-package com.juniperphoton.myersplash.compose
+package com.juniperphoton.myersplash.compose.settings
 
 import android.os.Bundle
 import com.juniperphoton.myersplash.R

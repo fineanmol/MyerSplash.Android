@@ -1,4 +1,4 @@
-package com.juniperphoton.myersplash.compose
+package com.juniperphoton.myersplash.compose.settings
 
 import android.app.Application
 import androidx.lifecycle.LiveData
