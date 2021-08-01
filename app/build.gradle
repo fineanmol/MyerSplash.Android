@@ -63,10 +63,6 @@ android {
         useIR = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.0.0-beta01'
-    }
-
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
