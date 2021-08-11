@@ -4,11 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.util.AttributeSet
 import androidx.annotation.StringRes
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -19,17 +16,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.PreviewActivity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
-import com.juniperphoton.myersplash.App
 import com.juniperphoton.myersplash.R
 import com.juniperphoton.myersplash.compose.theme.AppTheme
 import com.juniperphoton.myersplash.utils.ThemeHelper
@@ -182,13 +177,13 @@ fun SettingsContent(
 
     val title = when (dialogType.value) {
         DialogType.THEME -> {
-            R.string.settings_title
+            R.string.settings_theme
         }
         DialogType.BROWSING_QUALITY -> {
-            R.string.settings_download_quality
+            R.string.settings_loading_quality
         }
         DialogType.DOWNLOAD_QUALITY -> {
-            R.string.settings_loading_quality
+            R.string.settings_download_quality
         }
         else -> {
             0
@@ -222,6 +217,21 @@ fun SettingsContent(
         }
     }
 
+    val selectedIndex = when (dialogType.value) {
+        DialogType.THEME -> {
+            viewModel.themeIndex
+        }
+        DialogType.BROWSING_QUALITY -> {
+            viewModel.browsingQualityIndex
+        }
+        DialogType.DOWNLOAD_QUALITY -> {
+            viewModel.downloadQualityIndex
+        }
+        else -> {
+            -1
+        }
+    }
+
     val onClickItem: (Int) -> Unit = when (dialogType.value) {
         DialogType.THEME -> {
             {
@@ -249,6 +259,7 @@ fun SettingsContent(
         SelectDialog(
             title = title,
             contentList = list,
+            selectedIndex = selectedIndex,
             onDismissRequest = {
                 dialogType.value = DialogType.NONE
             }, onClickItem = {
@@ -259,16 +270,11 @@ fun SettingsContent(
     }
 }
 
-private fun Modifier.forThemeText(): Modifier {
-    return this
-        .padding(12.dp)
-        .fillMaxWidth()
-}
-
 @Composable
 fun SelectDialog(
     @StringRes title: Int,
     @StringRes contentList: List<Int>,
+    selectedIndex: Int,
     onDismissRequest: () -> Unit,
     onClickItem: (Int) -> Unit
 ) {
@@ -281,21 +287,44 @@ fun SelectDialog(
                     .fillMaxWidth()
             ) {
                 repeat(contentList.size) {
-                    Text(
-                        text = stringResource(id = contentList[it]),
-                        modifier = Modifier
-                            .clickable {
-                                onClickItem(it)
-                            }
-                            .forThemeText()
-                    )
+                    CheckableTextItem(selectedIndex == it, contentList[it]) {
+                        onClickItem(it)
+                    }
                 }
             }
         },
         title = {
-            Text(text = stringResource(id = title), fontWeight = FontWeight.Bold)
+            Text(
+                text = stringResource(id = title).uppercase(),
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colors.onSurface
+            )
         },
     )
+}
+
+@Composable
+fun CheckableTextItem(checked: Boolean, textId: Int, onClicked: (() -> Unit)?) {
+    Row(Modifier.clickable {
+        onClicked?.invoke()
+    }, verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            Modifier.size(30.dp), contentAlignment = Alignment.Center
+        ) {
+            if (checked) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_baseline_check),
+                    "checked",
+                    alignment = Alignment.Center,
+                )
+            }
+        }
+        Text(
+            text = stringResource(id = textId),
+            color = MaterialTheme.colors.onSurface,
+            modifier = Modifier.forThemeText()
+        )
+    }
 }
 
 @Composable
@@ -372,5 +401,15 @@ fun SwitchItem(
 @Composable
 fun Preview() {
     val viewModel = SettingsViewModel(LocalContext.current.applicationContext as Application)
-    SettingsContent(viewModel, onSetTheme = {}, onSetBrowsingQuality = {}, onSetDownloadQuality = {})
+    SettingsContent(
+        viewModel,
+        onSetTheme = {},
+        onSetBrowsingQuality = {},
+        onSetDownloadQuality = {})
+}
+
+private fun Modifier.forThemeText(): Modifier {
+    return this
+        .padding(12.dp)
+        .fillMaxWidth()
 }

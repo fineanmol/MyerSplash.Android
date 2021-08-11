@@ -44,23 +44,32 @@ class SettingsViewModel(application: Application) : BaseViewModel(application) {
     val browsingQuality: LiveData<String>
         get() = _browsingQuality
 
-    val themeStrings: Array<String> = arrayOf(
+    private val themeStrings: Array<String> = arrayOf(
         getString(R.string.settings_theme_dark),
         getString(R.string.settings_theme_light),
         getString(R.string.settings_theme_system)
     )
 
-    val downloadQualityStrings: Array<String> = arrayOf(
+    private val downloadQualityStrings: Array<String> = arrayOf(
         getString(R.string.settings_download_highest),
         getString(R.string.settings_download_high),
         getString(R.string.settings_download_medium)
     )
 
-    val browsingQualityStrings: Array<String> = arrayOf(
+    private val browsingQualityStrings: Array<String> = arrayOf(
         getString(R.string.settings_browsing_large),
         getString(R.string.settings_browsing_small),
         getString(R.string.settings_browsing_thumb)
     )
+
+    val themeIndex: Int
+        get() = themeStrings.indexOf(_theme.value)
+
+    val downloadQualityIndex: Int
+        get() = downloadQualityStrings.indexOf(_downloadQuality.value)
+
+    val browsingQualityIndex: Int
+        get() = browsingQualityStrings.indexOf(_browsingQuality.value)
 
     init {
         _meteredNetworkWarning.value = LocalSettingHelper.getBoolean(
