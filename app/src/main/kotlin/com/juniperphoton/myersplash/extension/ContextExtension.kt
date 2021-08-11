@@ -63,7 +63,7 @@ fun Context.getVersionName(): String? {
     return try {
         val manager = packageManager
         val info = manager.getPackageInfo(packageName, 0)
-        "Version ${info.versionName}"
+        "Version ${info.versionName}. Powered by Jetpack Compose."
     } catch (e: Exception) {
         null
     }

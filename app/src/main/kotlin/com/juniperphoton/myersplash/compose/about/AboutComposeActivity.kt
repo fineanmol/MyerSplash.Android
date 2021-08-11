@@ -17,6 +17,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -152,11 +153,12 @@ fun BrandTitle() {
         Text(
             text = stringResource(id = R.string.myer),
             fontSize = 40.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Light,
         )
         Text(
             text = stringResource(id = R.string.splash),
             fontSize = 40.sp,
+            fontWeight = FontWeight.Bold,
         )
     }
 }
@@ -165,7 +167,11 @@ fun BrandTitle() {
 fun BrandSubTitle() {
     Column {
         Spacer(modifier = Modifier.height(12.dp))
-        Text(text = stringResource(id = R.string.for_windows_amp_android), fontSize = 12.sp)
+        Text(
+            text = stringResource(id = R.string.for_windows_amp_android),
+            fontSize = 12.sp,
+            modifier = Modifier.alpha(0.5f)
+        )
         Spacer(modifier = Modifier.height(12.dp))
     }
 }
