@@ -9,17 +9,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object UnsplashImageFactory {
-    val TODAY_THUMB_URL: String
-        get() = createThumbDownloadUrl(todayDate)
-
-    val TODAY_DOWNLOAD_URL: String
-        get() = createFullDownloadUrl(todayDate)
-
-    val TODAY_DATE_STRING: String
-        get() {
-            return createDateString(todayDate)
-        }
-
     val TODAY_STRING_FOR_DISPLAY: String
         get() {
             return SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).format(todayDate)
@@ -38,7 +27,7 @@ object UnsplashImageFactory {
         ContextCompat.getColor(App.instance, R.color.highlightFallbackColor1).toHexString()
     }
 
-    fun createDateString(date: Date): String {
+    private fun createDateString(date: Date): String {
         return SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(date)
     }
 
@@ -76,9 +65,5 @@ object UnsplashImageFactory {
                 }
             }
         }
-    }
-
-    fun createTodayImage(): UnsplashImage {
-        return createHighlightImage(todayDate, true)
     }
 }

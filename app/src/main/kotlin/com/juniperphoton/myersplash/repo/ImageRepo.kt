@@ -1,6 +1,5 @@
 package com.juniperphoton.myersplash.repo
 
-import android.util.Log
 import androidx.annotation.UiThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -86,16 +85,14 @@ abstract class ImageRepo {
 }
 
 class NewImageRepo @Inject constructor(
-        private val service: PhotoService
+    private val service: PhotoService
 ) : ImageRepo() {
     override suspend fun loadData(page: Int): List<UnsplashImage> {
         return service.getNewPhotos(page).apply {
-            if (page == DEFAULT_PAGE) {
-                add(0, UnsplashImageFactory.createTodayImage())
-            }
-
-            val showSponsorship = LocalSettingHelper.getBoolean(App.instance,
-                    App.instance.getString(R.string.preference_key_show_sponsorship), true)
+            val showSponsorship = LocalSettingHelper.getBoolean(
+                App.instance,
+                App.instance.getString(R.string.preference_key_show_sponsorship), true
+            )
             if (!showSponsorship) {
                 removeAll { it.sponsorship != null }
             }
@@ -104,7 +101,7 @@ class NewImageRepo @Inject constructor(
 }
 
 class RandomImageRepo @Inject constructor(
-        private val service: PhotoService
+    private val service: PhotoService
 ) : ImageRepo() {
     override suspend fun loadData(page: Int): List<UnsplashImage> {
         return service.getRandomPhotos(page)
@@ -112,7 +109,7 @@ class RandomImageRepo @Inject constructor(
 }
 
 class DeveloperImageRepo @Inject constructor(
-        private val service: PhotoService
+    private val service: PhotoService
 ) : ImageRepo() {
     override suspend fun loadData(page: Int): List<UnsplashImage> {
         return service.getDeveloperPhotos(page)
@@ -123,6 +120,7 @@ class HighlightImageRepo : ImageRepo() {
     companion object {
         private const val TAG = "HighlightImageRepo"
 
+        private val startDate = SimpleDateFormat("yyyy/MM/dd").parse("2021/12/31")
         private val endDate = SimpleDateFormat("yyyy/MM/dd").parse("2017/03/20")
     }
 
@@ -132,7 +130,7 @@ class HighlightImageRepo : ImageRepo() {
 
     private suspend fun getHighlightsPhotos(page: Int): MutableList<UnsplashImage> {
         val calendar = Calendar.getInstance(TimeZone.getDefault())
-        calendar.add(Calendar.DATE, -(page - 1) * CloudService.DEFAULT_HIGHLIGHTS_COUNT)
+        calendar.time = startDate
 
         val list = mutableListOf<UnsplashImage>()
 
@@ -141,7 +139,9 @@ class HighlightImageRepo : ImageRepo() {
             if (date > endDate) {
                 list.add(UnsplashImageFactory.createHighlightImage(calendar.time))
             } else {
-                Log.w(TAG, "the date: $date is before end date $endDate")
+                Pasteur.debug(TAG) {
+                    "the date: $date is before end date $endDate"
+                }
             }
             calendar.add(Calendar.DATE, -1)
         }
@@ -153,7 +153,7 @@ class HighlightImageRepo : ImageRepo() {
 }
 
 class SearchImageRepo @Inject constructor(
-        private val service: PhotoService
+    private val service: PhotoService
 ) : ImageRepo() {
     var keyword: String? = null
 

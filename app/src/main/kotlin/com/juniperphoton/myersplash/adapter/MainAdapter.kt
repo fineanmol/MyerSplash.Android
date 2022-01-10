@@ -9,38 +9,27 @@ import com.juniperphoton.myersplash.fragment.ImageListFragment
 import com.juniperphoton.myersplash.model.UnsplashCategory
 
 @Suppress("DEPRECATION")
-class MainAdapter(fm: FragmentManager
+class MainAdapter(
+    fm: FragmentManager
 ) : FragmentStatePagerAdapter(fm) {
     companion object {
-        private val titlesMap = mutableMapOf(
-                0 to R.string.pivot_new,
-                1 to R.string.pivot_highlights,
-                2 to R.string.pivot_random,
-                3 to R.string.pivot_developer
+        private val titles = listOf(
+            UnsplashCategory.NEW_CATEGORY_ID to R.string.pivot_new,
+            UnsplashCategory.RANDOM_CATEGORY_ID to R.string.pivot_random,
+            UnsplashCategory.DEVELOPER_ID to R.string.pivot_developer,
+            UnsplashCategory.HIGHLIGHTS_CATEGORY_ID to R.string.pivot_highlights
         )
     }
 
     override fun getItem(position: Int): Fragment {
-        return ImageListFragment.build(when (position) {
-            0 -> {
-                UnsplashCategory.NEW_CATEGORY_ID
-            }
-            1 -> {
-                UnsplashCategory.HIGHLIGHTS_CATEGORY_ID
-            }
-            2 -> {
-                UnsplashCategory.RANDOM_CATEGORY_ID
-            }
-            3 -> {
-                UnsplashCategory.DEVELOPER_ID
-            }
-            else -> throw IllegalArgumentException("Unknown position: $position")
-        })
+        return ImageListFragment.build(
+            titles[position].first
+        )
     }
 
-    override fun getCount(): Int = titlesMap.size
+    override fun getCount(): Int = titles.size
 
     override fun getPageTitle(position: Int): CharSequence {
-        return App.instance.getString(titlesMap[position]!!)
+        return App.instance.getString(titles[position].second)
     }
 }

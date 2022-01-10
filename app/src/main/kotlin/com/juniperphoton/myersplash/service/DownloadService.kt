@@ -132,8 +132,7 @@ class DownloadService : Service(), CoroutineScope by MainScope() {
                     service.downloadFile(url)
                 }
 
-                Pasteur.d(TAG, "outputFile download onNext, " +
-                        "size=${responseBody.contentLength()}")
+                Pasteur.d(TAG, "outputFile download onNext, size=${responseBody.contentLength()}")
 
                 withContext(Dispatchers.IO) {
                     dao.setProgress(url, 1)
