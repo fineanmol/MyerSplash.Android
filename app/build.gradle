@@ -23,7 +23,7 @@ android {
     defaultConfig {
         applicationId "com.juniperphoton.myersplash"
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 631
         versionName "4.2.1"
 
