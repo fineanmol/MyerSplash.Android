@@ -1,4 +1,6 @@
-# MyerSplash for Android
+# MyerSplash for Android (No longer update)
+
+**MyerSplash and its Highlights feature is no longer updated. Thanks for all your support!**
 
 ![](./design/hero.jpg)
 
