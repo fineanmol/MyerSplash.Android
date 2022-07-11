@@ -74,7 +74,7 @@
     <string name="timeout">超时了</string>
     <string name="photo_by">作者</string>
     <string name="recommended_by">推荐者</string>
-    <string name="loading">加载中...</string>
+    <string name="loading">加载中…</string>
     <string name="end">到达世界的尽头了</string>
     <string name="recommended_tag">今日推荐</string>
     <string name="copied_tag">成功复制了</string>
@@ -85,6 +85,7 @@
     <string name="delete_downloading">删除正在下载的内容</string>
     <string name="delete_downloaded">删除下载完成的内容</string>
     <string name="delete_failed">删除下载失败的内容</string>
+    <string name="setting_wallpaper">正在设置壁纸…</string>
 
     <string name="share_text_highlights">通过 MyerSplash 分享这张超赞的图片。%s</string>
     <string name="share_text">通过 MyerSplash 分享 %s 的这张超赞的图片。%s</string>
@@ -97,4 +98,5 @@
     <string name="search_empty_hint">请输入关键字搜索</string>
     <string name="all_clear">清理完毕</string>
     <string name="clip_image_by_screen">根据当前显示区域裁剪</string>
+    <string name="title_activity_about">关于</string>
 </resources>

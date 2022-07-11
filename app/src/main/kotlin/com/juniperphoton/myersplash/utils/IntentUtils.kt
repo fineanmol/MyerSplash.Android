@@ -10,6 +10,8 @@ object IntentUtils {
         Pasteur.info("IntentUtils", "getSetAsWallpaperIntent: $uri")
         val intent = WallpaperManager.getInstance(App.instance).getCropAndSetWallpaperIntent(uri)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.type = "image/jpg"
         return intent
     }
 }

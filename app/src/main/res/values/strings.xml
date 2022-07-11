@@ -119,6 +119,7 @@
     <string name="pivot_developer">DEVELOPER</string>
     <string name="pivot_highlights">HIGHLIGHTS</string>
     <string name="pivot_random">RANDOM</string>
+    <string name="setting_wallpaper">Setting wallpaper…</string>
 
     <string name="delete_downloading">Delete downloading items</string>
     <string name="delete_downloaded">Delete downloaded items</string>

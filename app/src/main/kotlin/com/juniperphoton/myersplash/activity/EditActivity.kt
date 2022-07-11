@@ -8,11 +8,11 @@ import android.graphics.*
 import android.graphics.drawable.Animatable
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.SeekBar
 import androidx.annotation.WorkerThread
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.backends.pipeline.PipelineDraweeController
@@ -26,16 +26,13 @@ import com.juniperphoton.myersplash.di.AppComponent
 import com.juniperphoton.myersplash.extension.getScreenHeight
 import com.juniperphoton.myersplash.extension.updateIndex
 import com.juniperphoton.myersplash.utils.*
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_edit.*
+import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
-import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
-class EditActivity : BaseActivity() {
+class EditActivity : BaseActivity(), CoroutineScope by MainScope() {
     companion object {
         private const val TAG = "EditActivity"
         private const val SAVED_FILE_NAME = "final_dim_image.jpg"
@@ -153,73 +150,96 @@ class EditActivity : BaseActivity() {
         val resize = max(width, height)
 
         val request = ImageRequestBuilder.newBuilderWithSource(fileUri)
-                .setResizeOptions(ResizeOptions(resize, resize))
-                .build()
+            .setResizeOptions(ResizeOptions(resize, resize))
+            .build()
         val controller = Fresco.newDraweeControllerBuilder()
-                .setOldController(previewImageView.controller)
-                .setImageRequest(request)
-                .setControllerListener(object : SimpleControllerListener() {
-                    override fun onFinalImageSet(id: String?,
-                                                 imageInfo: ImageInfo?,
-                                                 animatable: Animatable?) {
-                        val rect = RectF()
-                        previewImageView.hierarchy.getActualImageBounds(rect)
-                        previewDraweeLayout.updateContentScale(rect)
-                    }
-                })
-                .build() as PipelineDraweeController
+            .setOldController(previewImageView.controller)
+            .setImageRequest(request)
+            .setControllerListener(object : SimpleControllerListener() {
+                override fun onFinalImageSet(
+                    id: String?,
+                    imageInfo: ImageInfo?,
+                    animatable: Animatable?
+                ) {
+                    val rect = RectF()
+                    previewImageView.hierarchy.getActualImageBounds(rect)
+                    previewDraweeLayout.updateContentScale(rect)
+                }
+            })
+            .build() as PipelineDraweeController
 
         previewImageView.controller = controller
     }
 
-    private fun setAs(file: File) {
+    private fun setAsWallpaper(file: File) {
         Pasteur.d(TAG, "set as, file path:${file.absolutePath}")
 
-        val uri = FileProvider.getUriForFile(App.instance,
-                App.instance.getString(R.string.authorities), file)
+        val uri = FileProvider.getUriForFile(
+            App.instance,
+            App.instance.getString(R.string.authorities), file, file.name
+        )
 
         try {
             val intent = IntentUtils.getSetAsWallpaperIntent(uri)
             startActivity(intent)
         } catch (e: IllegalArgumentException) {
-            val bm = MediaStore.Images.Media.getBitmap(contentResolver, uri)
-            WallpaperManager.getInstance(this).setBitmap(bm)
+            Pasteur.w(TAG, "error on setting wallpaper by intent $e, uri $uri")
+            setAsWallpaperByFallback(file)
         }
     }
 
-    private fun composeMask() {
+    private fun setAsWallpaperByFallback(file: File) = launch {
+        val dialog = AlertDialog.Builder(this@EditActivity)
+            .setMessage(getString(R.string.setting_wallpaper))
+            .create()
+        dialog.show()
+
+        try {
+            val bm = withContext(Dispatchers.IO) {
+                Uri.fromFile(file).getBitmap()
+            } ?: return@launch
+            WallpaperManager.getInstance(this@EditActivity).setBitmap(bm)
+        } finally {
+            dialog.dismiss()
+        }
+    }
+
+    private fun Uri.getBitmap(): Bitmap? {
+        return try {
+            contentResolver.openInputStream(this)?.use {
+                BitmapFactory.decodeStream(it)
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun composeMask() = launch {
         flipperLayout.next()
 
-        Observable.just(fileUri)
-                .subscribeOn(Schedulers.io())
-                .map {
-                    composeMaskInternal() ?: throw RuntimeException("Error")
-                }
-                .delay(FlipperLayout.DEFAULT_DURATION_MILLIS * 2, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .map {
-                    flipperLayout.next()
-                    it
-                }
-                .delay(FlipperLayout.DEFAULT_DURATION_MILLIS * 3, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(object : SimpleObserver<File>() {
-                    override fun onError(e: Throwable) {
-                        flipperLayout.next()
-                        super.onError(e)
-                        if (e is OutOfMemoryError) {
-                            Toaster.sendShortToast(resources.getString(R.string.oom_toast))
-                        }
-                    }
+        val file = withContext(Dispatchers.IO) {
+            composeMaskInternal()
+        } ?: run {
+            flipperLayout.next()
+            return@launch
+        }
 
-                    override fun onNext(data: File) {
-                        setAs(data)
-                    }
-                })
+        delay(FlipperLayout.DEFAULT_DURATION_MILLIS * 2)
+
+        flipperLayout.next()
+
+        delay(FlipperLayout.DEFAULT_DURATION_MILLIS * 3)
+
+        setAsWallpaper(file)
     }
 
     override fun onApplySystemInsets(top: Int, bottom: Int) {
         bottomBar.setPadding(0, 0, 0, bottomBar.paddingBottom + bottom)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cancel()
     }
 
     @SuppressLint("WrongThread")
@@ -245,10 +265,12 @@ class EditActivity : BaseActivity() {
 
         // Decode file with specified sample size
         val bm = decodeBitmapFromFile(fileUri, opt)
-                ?: throw IllegalStateException("Can't decode file")
+            ?: throw IllegalStateException("Can't decode file")
 
-        Pasteur.d(TAG, "file decoded, sample size:${opt.inSampleSize}, " +
-                "originalHeight=$originalHeight, screenH=$screenHeight")
+        Pasteur.d(
+            TAG, "file decoded, sample size:${opt.inSampleSize}, " +
+                    "originalHeight=$originalHeight, screenH=$screenHeight"
+        )
 
         Pasteur.d(TAG, "decoded size: ${bm.width} x ${bm.height}")
 
